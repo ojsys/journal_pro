@@ -1,0 +1,65 @@
+{% extends 'journal_app/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Latest Articles</h2>
+        {% for article in articles %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">{{ article.title }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">By {{ article.author.get_full_name|default:article.author.username }}</h6>
+                    <p class="card-text">{{ article.abstract|truncatewords:50 }}</p>
+                    <a href="{% url 'journal_app:article_detail' article.pk %}" class="btn btn-primary">Read More</a>
+                </div>
+                <div class="card-footer text-muted">
+                    Published: {{ article.publication_date|date:"F j, Y" }}
+                </div>
+            </div>
+        {% empty %}
+            <p>No articles published yet.</p>
+        {% endfor %}
+        
+        {% if is_paginated %}
+            <nav>
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">About the Journal</h5>
+                <p class="card-text">
+                    Welcome to the University of Jos Journal of English, Literary Studies, and General Studies.
+                    This platform provides a space for scholars and students to publish their research and academic work.
+                </p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'journal_app:submit_article' %}" class="btn btn-success">Submit an Article</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary">Login to Submit</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
