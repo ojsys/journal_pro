@@ -1,0 +1,295 @@
+<!-- templates/journal_app/article_submit.html -->
+{% extends 'journal_app/base.html' %}
+
+{% block title %}Submit Article - {{ department.name }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .required-field::after {
+        content: " *";
+        color: red;
+    }
+    .form-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    .submission-progress {
+        position: sticky;
+        top: 20px;
+    }
+    .select2-container .select2-selection--multiple {
+        min-height: 38px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Submission Progress Sidebar -->
+    <div class="col-md-3">
+        <div class="submission-progress">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Submission Progress</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="#basic-info" class="list-group-item list-group-item-action">
+                        <i class="bi bi-1-circle"></i> Basic Information
+                    </a>
+                    <a href="#authors" class="list-group-item list-group-item-action">
+                        <i class="bi bi-2-circle"></i> Authors
+                    </a>
+                    <a href="#manuscript" class="list-group-item list-group-item-action">
+                        <i class="bi bi-3-circle"></i> Manuscript
+                    </a>
+                    <a href="#metadata" class="list-group-item list-group-item-action">
+                        <i class="bi bi-4-circle"></i> Metadata
+                    </a>
+                    <a href="#confirmation" class="list-group-item list-group-item-action">
+                        <i class="bi bi-5-circle"></i> Confirmation
+                    </a>
+                </div>
+            </div>
+
+            <!-- Submission Guidelines -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Guidelines</h5>
+                </div>
+                <div class="card-body">
+                    <small>
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="bi bi-check-circle text-success"></i> File format: PDF or DOC(X)</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Max file size: 10MB</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Abstract: 250-300 words</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Keywords: 3-6 terms</li>
+                        </ul>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submission Form -->
+    <div class="col-md-9">
+        <form method="post" enctype="multipart/form-data" id="articleSubmissionForm" class="needs-validation" novalidate>
+            {% csrf_token %}
+
+            <!-- Basic Information Section -->
+            <div class="form-section" id="basic-info">
+                <h4 class="mb-4">Basic Information</h4>
+                
+                <div class="mb-3">
+                    <label for="{{ form.journal.id_for_label }}" class="form-label required-field">Journal</label>
+                    {{ form.journal }}
+                    {% if form.journal.errors %}
+                        <div class="invalid-feedback d-block">{{ form.journal.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.title.id_for_label }}" class="form-label required-field">Title</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="invalid-feedback d-block">{{ form.title.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.abstract.id_for_label }}" class="form-label required-field">Abstract</label>
+                    {{ form.abstract }}
+                    {% if form.abstract.errors %}
+                        <div class="invalid-feedback d-block">{{ form.abstract.errors }}</div>
+                    {% endif %}
+                    <div class="form-text">Provide a concise summary of your research (250-300 words)</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.keywords.id_for_label }}" class="form-label required-field">Keywords</label>
+                    {{ form.keywords }}
+                    {% if form.keywords.errors %}
+                        <div class="invalid-feedback d-block">{{ form.keywords.errors }}</div>
+                    {% endif %}
+                    <div class="form-text">Enter 3-6 keywords, separated by commas</div>
+                </div>
+            </div>
+
+            <!-- Authors Section -->
+            <div class="form-section" id="authors">
+                <h4 class="mb-4">Authors</h4>
+
+                <div class="mb-3">
+                    <label for="{{ form.co_authors.id_for_label }}" class="form-label">Co-Authors</label>
+                    {{ form.co_authors }}
+                    {% if form.co_authors.errors %}
+                        <div class="invalid-feedback d-block">{{ form.co_authors.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.corresponding_author.id_for_label }}" class="form-label required-field">
+                        Corresponding Author
+                    </label>
+                    {{ form.corresponding_author }}
+                    {% if form.corresponding_author.errors %}
+                        <div class="invalid-feedback d-block">{{ form.corresponding_author.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Manuscript Section -->
+            <div class="form-section" id="manuscript">
+                <h4 class="mb-4">Manuscript</h4>
+
+                <div class="mb-3">
+                    <label for="{{ form.manuscript_file.id_for_label }}" class="form-label required-field">
+                        Manuscript File
+                    </label>
+                    {{ form.manuscript_file }}
+                    {% if form.manuscript_file.errors %}
+                        <div class="invalid-feedback d-block">{{ form.manuscript_file.errors }}</div>
+                    {% endif %}
+                    <div class="form-text">Accepted formats: PDF, DOC, DOCX. Maximum size: 10MB</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Supplementary Files</label>
+                    <input type="file" class="form-control" name="supplementary_files" multiple>
+                    <div class="form-text">Optional: Add any supplementary materials (figures, data, etc.)</div>
+                </div>
+            </div>
+
+            <!-- Metadata Section -->
+            <div class="form-section" id="metadata">
+                <h4 class="mb-4">Additional Information</h4>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        {{ form.requires_ethics_statement }}
+                        <label class="form-check-label" for="{{ form.requires_ethics_statement.id_for_label }}">
+                            This research involves human/animal subjects
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-3 ethics-statement-section" style="display: none;">
+                    <label for="{{ form.ethics_statement.id_for_label }}" class="form-label">Ethics Statement</label>
+                    {{ form.ethics_statement }}
+                    <div class="form-text">Provide details about ethical approval and procedures followed</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.competing_interests.id_for_label }}" class="form-label">
+                        Competing Interests
+                    </label>
+                    {{ form.competing_interests }}
+                    <div class="form-text">Declare any competing interests that might influence your research</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.funding_information.id_for_label }}" class="form-label">
+                        Funding Information
+                    </label>
+                    {{ form.funding_information }}
+                    <div class="form-text">List any funding sources that supported this research</div>
+                </div>
+            </div>
+
+            <!-- Confirmation Section -->
+            <div class="form-section" id="confirmation">
+                <h4 class="mb-4">Confirmation</h4>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="confirmationCheck" required>
+                        <label class="form-check-label" for="confirmationCheck">
+                            I confirm that this manuscript has not been published elsewhere and is not under 
+                            consideration by another journal
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="guidelinesCheck" required>
+                        <label class="form-check-label" for="guidelinesCheck">
+                            I have read and agree to the journal's submission guidelines
+                        </label>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <h5><i class="bi bi-info-circle"></i> Before submitting:</h5>
+                    <ul class="mb-0">
+                        <li>Ensure all required fields are completed</li>
+                        <li>Check that your manuscript follows the journal's formatting guidelines</li>
+                        <li>Verify all co-authors are properly listed</li>
+                        <li>Make sure all supplementary files are included</li>
+                    </ul>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="button" class="btn btn-secondary me-md-2" onclick="saveAsDraft()">
+                        Save as Draft
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Submit Article
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Initialize Select2 for multiple select fields
+        $('.select2-multiple').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Select options'
+        });
+
+        // Show/hide ethics statement based on checkbox
+        $('#{{ form.requires_ethics_statement.id_for_label }}').change(function() {
+            $('.ethics-statement-section').toggle(this.checked);
+        });
+
+        // Form validation
+        const form = document.getElementById('articleSubmissionForm');
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+
+        // Smooth scroll to sections
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    });
+
+    // Save as draft functionality
+    function saveAsDraft() {
+        const form = document.getElementById('articleSubmissionForm');
+        const draftInput = document.createElement('input');
+        draftInput.type = 'hidden';
+        draftInput.name = 'save_as_draft';
+        draftInput.value = 'true';
+        form.appendChild(draftInput);
+        form.submit();
+    }
+</script>
+{% endblock %}

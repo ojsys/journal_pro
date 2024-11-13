@@ -1,0 +1,20 @@
+{% if reviews %}
+    <div class="list-group">
+        {% for review in reviews %}
+            <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ review.article.title }}</h5>
+                    <small class="text-muted">Due: {{ review.due_date|date:"M d, Y" }}</small>
+                </div>
+                <p class="mb-1">Authors: {{ review.article.author.get_full_name }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Assigned: {{ review.date_created|date:"M d, Y" }}</small>
+                    <a href="{% url 'journal_app:submit_review' department.slug review.article.id %}" 
+                       class="btn btn-sm btn-primary">Submit Review</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">No review assignments found.</p>
+{% endif %}

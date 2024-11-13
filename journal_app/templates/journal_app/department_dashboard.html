@@ -1,0 +1,323 @@
+<!-- templates/journal_app/department_dashboard.html -->
+{% extends 'journal_app/base.html' %}
+
+{% block title %}{{ department.name }} Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>Department Dashboard</h2>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    {% if user.profile.role in 'EDITOR,DEPT_ADMIN,ADMIN' %}
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">New Submissions</h5>
+                    <h2 class="card-text">{{ new_submissions.count }}</h2>
+                    <p class="mb-0">Pending Review</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Under Review</h5>
+                    <h2 class="card-text">{{ pending_reviews.count }}</h2>
+                    <p class="mb-0">Articles in Review</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Published</h5>
+                    <h2 class="card-text">{{ recent_publications.count }}</h2>
+                    <p class="mb-0">This Month</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Reviews Due</h5>
+                    <h2 class="card-text">{{ pending_reviews.count }}</h2>
+                    <p class="mb-0">Next 7 Days</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Main Content Area -->
+<div class="row">
+    <!-- Left Column -->
+    <div class="col-md-8">
+        {% if user.profile.role in 'EDITOR,DEPT_ADMIN,ADMIN' %}
+            <!-- New Submissions -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">New Submissions</h5>
+                    <a href="{% url 'journal_app:bulk_article_management' department.slug %}" class="btn btn-sm btn-primary">
+                        Manage All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if new_submissions %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Author</th>
+                                        <th>Submitted</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for article in new_submissions %}
+                                        <tr>
+                                            <td>{{ article.title }}</td>
+                                            <td>{{ article.author.get_full_name }}</td>
+                                            <td>{{ article.submission_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                <a href="{% url 'journal_app:article_detail' department.slug article.id %}" 
+                                                   class="btn btn-sm btn-primary">Review</a>
+                                                <a href="{% url 'journal_app:review_assign' department.slug article.id %}" 
+                                                   class="btn btn-sm btn-outline-primary">Assign Reviewers</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No new submissions.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Under Review -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Articles Under Review</h5>
+                </div>
+                <div class="card-body">
+                    {% if pending_reviews %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Reviews Complete</th>
+                                        <th>Reviews Pending</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for article in pending_reviews %}
+                                        <tr>
+                                            <td>{{ article.title }}</td>
+                                            <td>{{ article.reviews.complete.count }}/{{ article.reviews.count }}</td>
+                                            <td>{{ article.reviews.pending.count }}</td>
+                                            <td>
+                                                <a href="{% url 'journal_app:article_detail' department.slug article.id %}" 
+                                                   class="btn btn-sm btn-info">View Progress</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No articles currently under review.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        {% if user.profile.role == 'REVIEWER' %}
+            <!-- Review Assignments -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Your Review Assignments</h5>
+                </div>
+                <div class="card-body">
+                    {% if review_assignments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Article Title</th>
+                                        <th>Due Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for review in review_assignments %}
+                                        <tr>
+                                            <td>{{ review.article.title }}</td>
+                                            <td>{{ review.due_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                {% if review.is_complete %}
+                                                    <span class="badge bg-success">Complete</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'journal_app:review_submit' department.slug review.id %}" 
+                                                   class="btn btn-sm btn-primary">Submit Review</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No pending review assignments.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- My Submissions -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">My Submissions</h5>
+                <a href="{% url 'journal_app:article_submit' department.slug %}" class="btn btn-sm btn-success">
+                    New Submission
+                </a>
+            </div>
+            <div class="card-body">
+                {% if submitted_articles %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for article in submitted_articles %}
+                                    <tr>
+                                        <td>{{ article.title }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ article.status|lower }}">
+                                                {{ article.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ article.submission_date|date:"M d, Y" }}</td>
+                                        <td>
+                                            <a href="{% url 'journal_app:article_detail' department.slug article.id %}" 
+                                               class="btn btn-sm btn-primary">View</a>
+                                            {% if article.status == 'DRAFT' %}
+                                                <a href="{% url 'journal_app:article_edit' department.slug article.id %}" 
+                                                   class="btn btn-sm btn-outline-primary">Edit</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No submissions yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-md-4">
+        <!-- Quick Actions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'journal_app:article_submit' department.slug %}" 
+                       class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Submit New Article
+                    </a>
+                    {% if user.profile.role in 'EDITOR,DEPT_ADMIN,ADMIN' %}
+                        <a href="{% url 'journal_app:bulk_article_management' department.slug %}" 
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-collection"></i> Bulk Management
+                        </a>
+                        <a href="{% url 'journal_app:review_statistics' department.slug %}" 
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-graph-up"></i> Review Statistics
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for log in recent_activity %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ log.action }}</h6>
+                                <small>{{ log.timestamp|timesince }} ago</small>
+                            </div>
+                            <p class="mb-1">{{ log.details }}</p>
+                            <small>By {{ log.user.get_full_name }}</small>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted mb-0">No recent activity.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Department Info -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Department Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Head of Department:</strong><br>
+                   {{ department.head_of_dept.get_full_name }}</p>
+                <p><strong>Contact:</strong><br>
+                   {{ department.email }}</p>
+                <p><strong>Submission Guidelines:</strong><br>
+                   <a href="#" class="text-primary">View Guidelines</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Refresh status updates periodically
+    function refreshStatistics() {
+        fetch(`{% url 'journal_app:api_department_statistics' department.slug %}`)
+            .then(response => response.json())
+            .then(data => {
+                // Update statistics cards
+                document.getElementById('new-submissions-count').textContent = data.new_submissions;
+                document.getElementById('pending-reviews-count').textContent = data.pending_reviews;
+                document.getElementById('published-count').textContent = data.published;
+            });
+    }
+
+    // Refresh every 5 minutes
+    setInterval(refreshStatistics, 300000);
+</script>
+{% endblock %}
