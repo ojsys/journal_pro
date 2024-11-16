@@ -125,6 +125,7 @@ class Journal(models.Model):
     editor_in_chief = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='edited_journals')
     editorial_board = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='board_member_of')
     cover_image = models.ImageField(upload_to='journal_covers/', null=True, blank=True)
+    latest_issue_date = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -216,6 +217,7 @@ class Article(models.Model):
     volume = models.ForeignKey(Volume, on_delete=models.SET_NULL, null=True, related_name='volume_articles')
     issue = models.ForeignKey(Issue, on_delete=models.SET_NULL, null=True, related_name='issue_articles')
     citation_count = models.PositiveIntegerField(default=0)
+    download_count = models.PositiveIntegerField(default=0)
     
     # Flags and Settings
     is_featured = models.BooleanField(default=False)

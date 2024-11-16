@@ -103,7 +103,14 @@ def register(request):
 # Department Views
 
 def department_home(request):
-    context = {}
+    context = {
+        'departments': Department.objects.filter(is_active=True),
+        'recent_journals': Journal.objects.all().order_by('-created_at')[:6],
+        'total_articles': Article.objects.count(),
+        'total_authors': Profile.objects.filter(role='AUTHOR').count(),
+        'total_citations': Article.objects.aggregate(Sum('citation_count'))['citation_count__sum'] or 0,
+        'total_downloads': Article.objects.aggregate(Sum('download_count'))['download_count__sum'] or 0,
+    }
     return render(request, 'journal_app/department_home.html', context)
 
 

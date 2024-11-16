@@ -33,6 +33,10 @@ urlpatterns = [
     path('<slug:dept_slug>/article/<int:article_id>/', views.article_detail, name='article_detail'),
     path('<slug:dept_slug>/article/<int:article_id>/edit/', views.article_edit, name='article_edit'),
 
+    # Journal
+    path('journals/', views.journal_list, name='journal_list'),
+    path('journals/<slug:slug>/', views.journal_detail, name='journal_detail'),
+
     # Review URLs
     path('<slug:dept_slug>/article/<int:article_id>/assign-reviewers/', 
          views.review_assign, name='review_assign'),

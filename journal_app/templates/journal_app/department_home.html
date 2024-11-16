@@ -1,2 +1,178 @@
 {% extends 'journal_app/base.html' %}
 {% load static %}
+
+{% block title %}Welcome to Academic Journal{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section */
+    .hero {
+        background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('{% static "images/library-bg.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        padding: 100px 0;
+        color: white;
+    }
+
+    /* Department Cards */
+    .department-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+    }
+
+    .department-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .department-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #0d6efd;
+    }
+
+    /* Journal Cards */
+    .journal-card {
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+
+    .journal-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .journal-meta {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    /* Stats Section */
+    .stats-section {
+        background-color: #f8f9fa;
+        padding: 60px 0;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 20px;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+
+    .stat-label {
+        font-size: 1.1rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero text-center">
+    <div class="container">
+        <h1 class="display-4 mb-4">Academic Excellence Through Research</h1>
+        <p class="lead mb-4">Discover groundbreaking research across multiple disciplines</p>
+        <a href="#departments" class="btn btn-primary btn-lg me-2">Submit Article</a>
+        <a href="#journals" class="btn btn-outline-light btn-lg">Browse Journals</a>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_articles }}</div>
+                    <div class="stat-label">Published Articles</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_authors }}</div>
+                    <div class="stat-label">Authors</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_citations }}</div>
+                    <div class="stat-label">Citations</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_downloads }}</div>
+                    <div class="stat-label">Downloads</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Departments Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Our Departments</h2>
+        <div class="row g-4">
+            {% for department in departments %}
+            <div class="col-md-4">
+                <div class="card department-card">
+                    <div class="card-body text-center">
+                        <div class="department-icon">
+                            {% if department.name == 'ENGLISH' %}
+                                <i class="bi bi-book"></i>
+                            {% elif department.name == 'LITERARY' %}
+                                <i class="bi bi-pen"></i>
+                            {% else %}
+                                <i class="bi bi-globe"></i>
+                            {% endif %}
+                        </div>
+                        <h3 class="card-title">{{ department.get_name_display }}</h3>
+                        <p class="card-text">{{ department.description|truncatewords:30 }}</p>
+                        <a href="{% url 'journal_app:department_detail' department.slug %}" class="btn btn-outline-primary">Learn More</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Recent Journals Section -->
+<section class="py-5 bg-light" id="journals">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Recent Journals</h2>
+            <a href="{% url 'journal_app:journal_list' %}" class="btn btn-outline-primary">View All</a>
+        </div>
+        <div class="row g-4">
+            {% for journal in recent_journals %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card journal-card">
+                    {% if journal.cover_image %}
+                    <img src="{{ journal.cover_image.url }}" class="card-img-top" alt="{{ journal.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ journal.title }}</h5>
+                        <p class="card-text">{{ journal.description|truncatewords:20 }}</p>
+                        <div class="journal-meta mb-3">
+                            <div><i class="bi bi-calendar"></i> Latest Issue: {{ journal.latest_issue_date|date }}</div>
+                            <div><i class="bi bi-person"></i> Editor: {{ journal.editor_in_chief.get_full_name }}</div>
+                        </div>
+                        <a href="{% url 'journal_app:journal_detail' journal.slug %}" class="btn btn-primary">View Journal</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">No journals available at the moment.</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
