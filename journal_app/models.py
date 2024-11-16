@@ -1,9 +1,36 @@
 # models.py
+
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser, BaseUserManager
 from django.utils import timezone
 from django.urls import reverse
 import uuid
+from django.conf import settings
+
+
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(email, password, **extra_fields)
+
+class CustomUser(AbstractUser):
+    username = None
+    email = models.EmailField('email address', unique=True)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    objects = CustomUserManager()
 
 class Department(models.Model):
     DEPARTMENT_CHOICES = [
@@ -16,7 +43,7 @@ class Department(models.Model):
     slug = models.SlugField(unique=True)
     description = models.TextField()
     established_date = models.DateField()
-    head_of_dept = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='headed_department')
+    head_of_dept = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='headed_department')
     email = models.EmailField()
     phone = models.CharField(max_length=20, blank=True)
     address = models.TextField()
@@ -68,7 +95,7 @@ class Profile(models.Model):
         ('ADMIN', 'Administrator')
     ]
     
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     departments = models.ManyToManyField(Department, related_name='members')
     role = models.CharField(max_length=20, choices=ROLES, default='AUTHOR')
     institution = models.CharField(max_length=200)
@@ -95,8 +122,8 @@ class Journal(models.Model):
     slug = models.SlugField(unique=True)
     description = models.TextField()
     issn = models.CharField(max_length=9, blank=True, null=True)
-    editor_in_chief = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='edited_journals')
-    editorial_board = models.ManyToManyField(User, related_name='board_member_of')
+    editor_in_chief = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='edited_journals')
+    editorial_board = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='board_member_of')
     cover_image = models.ImageField(upload_to='journal_covers/', null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -104,6 +131,42 @@ class Journal(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.department.name})"
+
+class Volume(models.Model):
+    journal = models.ForeignKey(Journal, on_delete=models.CASCADE, related_name='volumes')
+    number = models.PositiveIntegerField()
+    year = models.PositiveIntegerField()
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    is_current = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['journal', 'number']
+        ordering = ['-year', '-number']
+
+    def __str__(self):
+        return f"Volume {self.number} ({self.year}) - {self.journal.title}"
+
+class Issue(models.Model):
+    volume = models.ForeignKey(Volume, on_delete=models.CASCADE, related_name='issues')
+    number = models.PositiveIntegerField()
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    publication_date = models.DateField()
+    is_special_issue = models.BooleanField(default=False)
+    special_issue_title = models.CharField(max_length=200, blank=True, null=True)
+    is_published = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['volume', 'number']
+        ordering = ['-publication_date']
+
+    def __str__(self):
+        return f"Issue {self.number} - {self.volume}"
 
 class Article(models.Model):
     STATUS_CHOICES = [
@@ -119,17 +182,17 @@ class Article(models.Model):
 
     # Basic Information
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='articles')
-    journal = models.ForeignKey(Journal, on_delete=models.CASCADE, related_name='articles')
+    journal = models.ForeignKey(Journal, on_delete=models.CASCADE, related_name='journal_articles')
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     abstract = models.TextField()
     keywords = models.CharField(max_length=200)
     
     # Authors Information
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='articles')
-    co_authors = models.ManyToManyField(User, related_name='co_authored_articles', blank=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='authored_articles')
+    co_authors = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='coauthored_articles', blank=True)
     corresponding_author = models.ForeignKey(
-        User, 
+        settings.AUTH_USER_MODEL, 
         on_delete=models.SET_NULL, 
         null=True, 
         related_name='corresponding_articles'
@@ -150,8 +213,8 @@ class Article(models.Model):
     # Metadata
     doi = models.CharField(max_length=100, blank=True, null=True)
     page_numbers = models.CharField(max_length=50, blank=True)
-    volume = models.ForeignKey('Volume', on_delete=models.SET_NULL, null=True, related_name='articles')
-    issue = models.ForeignKey('Issue', on_delete=models.SET_NULL, null=True, related_name='articles')
+    volume = models.ForeignKey(Volume, on_delete=models.SET_NULL, null=True, related_name='volume_articles')
+    issue = models.ForeignKey(Issue, on_delete=models.SET_NULL, null=True, related_name='issue_articles')
     citation_count = models.PositiveIntegerField(default=0)
     
     # Flags and Settings
@@ -183,12 +246,12 @@ class ArticleFile(models.Model):
         ('RESPONSE', 'Response to Reviewers')
     ]
 
-    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='files')
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='article_files')
     file = models.FileField(upload_to='article_files/%Y/%m/')
     file_type = models.CharField(max_length=20, choices=FILE_TYPES)
     version = models.PositiveIntegerField(default=1)
     description = models.TextField(blank=True)
-    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     upload_date = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 
@@ -203,8 +266,8 @@ class Review(models.Model):
         ('REJECT', 'Reject')
     ]
 
-    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='reviews')
-    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='article_reviews')
+    reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviewer_reviews')
     assigned_date = models.DateTimeField(auto_now_add=True)
     due_date = models.DateTimeField()
     completion_date = models.DateTimeField(null=True, blank=True)
@@ -219,9 +282,6 @@ class Review(models.Model):
     review_form_responses = models.JSONField(null=True, blank=True)
     confidential_comments = models.TextField(blank=True)
     
-    # Attachments
-    attachments = models.ManyToManyField('ReviewAttachment', related_name='review', blank=True)
-    
     class Meta:
         unique_together = ['article', 'reviewer']
         ordering = ['-assigned_date']
@@ -233,10 +293,18 @@ class Review(models.Model):
             self.due_date = timezone.now() + timezone.timedelta(days=days)
         super().save(*args, **kwargs)
 
+    def __str__(self):
+        return f"Review for {self.article.title} by {self.reviewer.username}"
+
 class ReviewAttachment(models.Model):
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='review_files')
     file = models.FileField(upload_to='review_attachments/%Y/%m/')
-    description = models.CharField(max_length=200)
+    description = models.CharField(max_length=255)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Attachment for {self.review}"
 
 class EmailLog(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='email_logs')
@@ -253,7 +321,7 @@ class EmailLog(models.Model):
 
 class AuditLog(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='audit_logs')
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     action = models.CharField(max_length=100)
     details = models.TextField()
     ip_address = models.GenericIPAddressField(null=True)

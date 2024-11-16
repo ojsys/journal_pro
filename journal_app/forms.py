@@ -1,9 +1,12 @@
 # forms.py
 from django import forms
+from django.forms.widgets import FileInput
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import (Department, DepartmentSettings, Profile, Journal, Article, 
-                    ArticleFile, Review, ReviewAttachment)
+                    ArticleFile, Review, ReviewAttachment, CustomUser)
 
 class DepartmentForm(forms.ModelForm):
     class Meta:
@@ -40,7 +43,7 @@ class DepartmentSettingsForm(forms.ModelForm):
         }
 
 class UserRegistrationForm(UserCreationForm):
-    email = forms.EmailField(required=True)
+    #email = forms.EmailField(required=True)
     departments = forms.ModelMultipleChoiceField(
         queryset=Department.objects.filter(is_active=True),
         widget=forms.CheckboxSelectMultiple,
@@ -48,8 +51,15 @@ class UserRegistrationForm(UserCreationForm):
     )
     
     class Meta:
-        model = User
-        fields = ('username', 'email', 'password1', 'password2', 'first_name', 'last_name')
+        model = CustomUser
+        fields = ['email', 'password1', 'password2', 'first_name', 'last_name']
+        widgets = { 
+            'email': forms.EmailInput(attrs={'class':'form-control'}), 
+            'password1': forms.PasswordInput(attrs={'class':'form-control'}), 
+            'password2': forms.PasswordInput(attrs={'class':'form-control'}),
+            'first_name': forms.TextInput(attrs={'class':'form-control'}), 
+            'last_name': forms.TextInput(attrs={'class':'form-control'})
+        }
 
 class ProfileForm(forms.ModelForm):
     class Meta:
@@ -118,40 +128,88 @@ class ArticleFileForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
         }
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
+
 class ReviewForm(forms.ModelForm):
-    attachments = forms.FileField(
-        widget=forms.ClearableFileInput(attrs={'multiple': True, 'class': 'form-control'}),
-        required=False
+    files = MultipleFileField(
+        label='Attachments',
+        required=False,
+        widget=MultipleFileInput(attrs={
+            'class': 'form-control',
+            'accept': '.pdf,.doc,.docx,.txt'
+        })
     )
 
     class Meta:
         model = Review
-        fields = ['comments_to_editor', 'comments_to_author', 'recommendation',
-                 'review_form_responses', 'confidential_comments']
+        fields = ['recommendation', 'comments_to_editor', 'comments_to_author']
         widgets = {
-            'comments_to_editor': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
-            'comments_to_author': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
-            'recommendation': forms.Select(attrs={'class': 'form-select'}),
-            'confidential_comments': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'recommendation': forms.Select(attrs={
+                'class': 'form-select',
+                'required': True
+            }),
+            'comments_to_editor': forms.Textarea(attrs={
+                'rows': 6,
+                'class': 'form-control',
+                'required': True,
+                'placeholder': 'Enter your confidential comments to the editor'
+            }),
+            'comments_to_author': forms.Textarea(attrs={
+                'rows': 6,
+                'class': 'form-control',
+                'required': True,
+                'placeholder': 'Enter your comments to the author'
+            })
         }
 
-    def save(self, commit=True):
-        review = super().save(commit=False)
-        if commit:
-            review.is_complete = True
-            review.completion_date = timezone.now()
-            review.save()
-            
-            # Handle attachments
-            attachments = self.cleaned_data.get('attachments')
-            if attachments:
-                for attachment in attachments:
-                    ReviewAttachment.objects.create(
-                        review=review,
-                        file=attachment,
-                        description=f"Review attachment for {review.article.title}"
-                    )
-        return review
+    def clean_files(self):
+        files = self.cleaned_data.get('files', [])
+        if not files:
+            return files
+
+        max_size = 10 * 1024 * 1024  # 10MB
+        allowed_extensions = ['.pdf', '.doc', '.docx', '.txt']
+
+        for file in files:
+            if file.size > max_size:
+                raise ValidationError(f'File {file.name} is too large. Maximum size is 10MB.')
+
+            ext = os.path.splitext(file.name)[1].lower()
+            if ext not in allowed_extensions:
+                raise ValidationError(
+                    f'File {file.name} has an invalid extension. Allowed types are: {", ".join(allowed_extensions)}'
+                )
+
+        return files
+
+
+class ReviewAttachmentForm(forms.ModelForm):
+    class Meta:
+        model = ReviewAttachment
+        fields = ['file', 'description']
+        widgets = {
+            'file': forms.FileInput(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(
+                attrs={
+                    'class': 'form-control',
+                    'placeholder': 'Brief description of the file'
+                }
+            )
+        }
 
 class ReviewAssignmentForm(forms.Form):
     reviewers = forms.ModelMultipleChoiceField(

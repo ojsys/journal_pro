@@ -1,0 +1,239 @@
+<!-- templates/journal_app/review/submit_review.html -->
+{% extends 'journal_app/base.html' %}
+
+{% block title %}Submit Review - {{ article.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Main Review Form -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Review Submission Form</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Article Details Summary -->
+                    <div class="alert alert-light border mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ article.title }}</h6>
+                                <p class="text-muted mb-0 small">
+                                    Due by: {{ review.due_date|date:"F j, Y" }}
+                                </p>
+                            </div>
+                            <span class="badge bg-primary">{{ article.get_status_display }}</span>
+                        </div>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" id="reviewForm">
+                        {% csrf_token %}
+                        
+                        <!-- Recommendation -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Recommendation</label>
+                            {{ form.recommendation }}
+                            {% if form.recommendation.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.recommendation.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    
+                        <!-- Comments to Editor -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                Comments to Editor
+                                <span class="text-muted">(Confidential)</span>
+                            </label>
+                            {{ form.comments_to_editor }}
+                            {% if form.comments_to_editor.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.comments_to_editor.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    
+                        <!-- Comments to Author -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Comments to Author</label>
+                            {{ form.comments_to_author }}
+                            {% if form.comments_to_author.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.comments_to_author.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    
+                        <!-- File Attachments -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Attachments</label>
+                            <div class="input-group">
+                                {{ form.files }}
+                            </div>
+                            {% if form.files.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.files.errors }}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Allowed file types: PDF, DOC, DOCX, TXT. Maximum size per file: 10MB
+                            </div>
+                        </div>
+                    
+                        <!-- File List Preview -->
+                        <div id="filePreview" class="mb-4 d-none">
+                            <h6 class="mb-2">Selected Files:</h6>
+                            <ul class="list-group" id="fileList"></ul>
+                        </div>
+                        
+                    
+                        <!-- Submit Buttons -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary" onclick="saveAsDraft()">
+                                Save as Draft
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                Submit Review
+                            </button>
+                        </div>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Review Guidelines -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Review Guidelines</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="mb-2">Evaluation Criteria</h6>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                Originality & Innovation
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                Research Methodology
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                Data Analysis & Results
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                Writing & Organization
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="mb-2">Recommendation Guide</h6>
+                        <div class="list-group list-group-flush small">
+                            <div class="list-group-item">
+                                <div class="fw-bold text-success">Accept</div>
+                                Minimal or no revisions needed
+                            </div>
+                            <div class="list-group-item">
+                                <div class="fw-bold text-warning">Minor Revision</div>
+                                Small changes required
+                            </div>
+                            <div class="list-group-item">
+                                <div class="fw-bold text-warning">Major Revision</div>
+                                Substantial changes needed
+                            </div>
+                            <div class="list-group-item">
+                                <div class="fw-bold text-danger">Reject</div>
+                                Does not meet journal standards
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Progress -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Your Review Progress</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-3" style="height: 20px;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%"
+                             aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            0%
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span>Started: {{ review.assigned_date|date:"M d, Y" }}</span>
+                        <span>Due: {{ review.due_date|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Save Draft Confirmation Modal -->
+<div class="modal fade" id="saveDraftModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Save Draft</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Your review will be saved as a draft. You can return to complete it later.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitDraft()">Save Draft</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.querySelector('input[type="file"]');
+    const filePreview = document.getElementById('filePreview');
+    const fileList = document.getElementById('fileList');
+
+    fileInput.addEventListener('change', function() {
+        fileList.innerHTML = '';
+        if (this.files.length > 0) {
+            filePreview.classList.remove('d-none');
+            Array.from(this.files).forEach(file => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.innerHTML = `
+                    <div>
+                        <i class="bi bi-file-earmark me-2"></i>
+                        ${file.name}
+                    </div>
+                    <span class="badge bg-secondary">${formatFileSize(file.size)}</span>
+                `;
+                fileList.appendChild(li);
+            });
+        } else {
+            filePreview.classList.add('d-none');
+        }
+    });
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+});
+</script>
+{% endblock %}

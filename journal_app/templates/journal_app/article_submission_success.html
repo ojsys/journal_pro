@@ -1,0 +1,91 @@
+{% extends 'journal_app/base.html' %}
+
+{% block title %}Submission Successful{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h2 class="card-title mb-4">Submission Successful!</h2>
+                {% if article.status == 'DRAFT' %}
+                    <p class="card-text">Your article has been saved as a draft.</p>
+                    <div class="mb-4">
+                        <small class="text-muted">
+                            You can continue editing your submission until you're ready to submit it for review.
+                        </small>
+                    </div>
+                    <div class="d-grid gap-2 d-md-block">
+                        <a href="{% url 'journal_app:article_edit' department.slug article.id %}" 
+                           class="btn btn-primary me-2">
+                            Continue Editing
+                        </a>
+                        <a href="{% url 'journal_app:department_dashboard' department.slug %}" 
+                           class="btn btn-outline-primary">
+                            Go to Dashboard
+                        </a>
+                    </div>
+                {% else %}
+                    <p class="card-text">Your article has been submitted successfully.</p>
+                    <div class="mb-4">
+                        <small class="text-muted">
+                            You will receive a confirmation email shortly. The editorial team will review your 
+                            submission and contact you with their decision.
+                        </small>
+                    </div>
+                    <div class="mb-4">
+                        <h5>Next Steps:</h5>
+                        <ol class="text-start">
+                            <li>Check your email for a confirmation message</li>
+                            <li>Monitor your submission status through your dashboard</li>
+                            <li>Respond promptly to any requests from editors or reviewers</li>
+                        </ol>
+                    </div>
+                    <div class="d-grid gap-2 d-md-block">
+                        <a href="{% url 'journal_app:article_detail' department.slug article.id %}" 
+                           class="btn btn-primary me-2">
+                            View Submission
+                        </a>
+                        <a href="{% url 'journal_app:department_dashboard' department.slug %}" 
+                           class="btn btn-outline-primary">
+                            Go to Dashboard
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Submission Details -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Submission Details</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">Title</dt>
+                    <dd class="col-sm-9">{{ article.title }}</dd>
+
+                    <dt class="col-sm-3">Submission ID</dt>
+                    <dd class="col-sm-9">{{ article.id }}</dd>
+
+                    <dt class="col-sm-3">Journal</dt>
+                    <dd class="col-sm-9">{{ article.journal.title }}</dd>
+
+                    <dt class="col-sm-3">Status</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge bg-{{ article.status|lower }}">
+                            {{ article.get_status_display }}
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-3">Submitted</dt>
+                    <dd class="col-sm-9">{{ article.submission_date|date:"F j, Y, g:i a" }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

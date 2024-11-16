@@ -32,6 +32,44 @@
             transform: translateY(-5px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .content-wrapper {
+            flex: 1 0 auto;
+            min-height: calc(100vh - 250px); /* Adjust 60px based on your footer height */
+        }
+
+        .footer {
+            flex-shrink: 0;
+            background-color: #f8f9fa;
+            padding: 1.5rem 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+         /* Sticky footer styles */
+         main {
+            flex: 1 0 auto;
+        }
+
+        .footer {
+            background-color: #333333;
+            padding: 1.5rem 0;
+            margin-top: auto;
+        }
+
+        /* Optional: Add a subtle shadow to the footer */
+        .footer {
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -39,7 +77,7 @@
     <!-- Top Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'journal_app:department_list' %}">
+            <a class="navbar-brand" href="{% url 'journal_app:department_home' %}">
                 UJ Journal System
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -60,7 +98,7 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
                                data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle"></i> {{ user.username }}
+                                <i class="bi bi-person-circle"></i> {{ user.first_name }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
@@ -68,13 +106,7 @@
                                         <i class="bi bi-gear"></i> Profile Settings
                                     </a>
                                 </li>
-                                {% if user.profile.role in 'EDITOR,DEPT_ADMIN,ADMIN' %}
-                                    <li>
-                                        <a class="dropdown-item" href="{% url 'journal_app:department_manage' department.slug %}">
-                                            <i class="bi bi-sliders"></i> Department Settings
-                                        </a>
-                                    </li>
-                                {% endif %}
+                                
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item" href="{% url 'logout' %}">
@@ -117,89 +149,94 @@
     {% endif %}
 
     <!-- Main Content Area -->
-    <div class="container-fluid">
-        <div class="row">
-            {% if user.is_authenticated and department %}
-                <!-- Sidebar -->
-                <div class="col-md-3 col-lg-2 px-0 sidebar">
-                    <div class="py-4">
-                        <div class="list-group list-group-flush">
-                            <a href="{% url 'journal_app:department_dashboard' department.slug %}" 
-                               class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'department_dashboard' %}active{% endif %}">
-                                <i class="bi bi-speedometer2"></i> Dashboard
-                            </a>
-                            <a href="{% url 'journal_app:article_submit' department.slug %}" 
-                               class="list-group-item list-group-item-action">
-                                <i class="bi bi-file-earmark-plus"></i> Submit Article
-                            </a>
-                            {% if user.profile.role in 'EDITOR,DEPT_ADMIN,ADMIN' %}
-                                <a href="{% url 'journal_app:review_statistics' department.slug %}" 
-                                   class="list-group-item list-group-item-action">
-                                    <i class="bi bi-graph-up"></i> Review Statistics
+    <div class="content-wrapper">
+        <main class="container-fluid">
+            <div class="row">
+                {% if user.is_authenticated and department %}
+                    <!-- Sidebar -->
+                    <div class="col-md-3 col-lg-2 px-0 sidebar">
+                        <div class="py-4">
+                            <div class="list-group list-group-flush">
+                                <a href="{% url 'journal_app:department_dashboard' department.slug %}" 
+                                   class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'department_dashboard' %}active{% endif %}">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
                                 </a>
-                                <a href="{% url 'journal_app:bulk_article_management' department.slug %}" 
+                                <a href="{% url 'journal_app:article_submit' department.slug %}" 
                                    class="list-group-item list-group-item-action">
-                                    <i class="bi bi-collection"></i> Bulk Management
+                                    <i class="bi bi-file-earmark-plus"></i> Submit Article
                                 </a>
-                                <a href="{% url 'journal_app:department_analytics' department.slug %}" 
-                                   class="list-group-item list-group-item-action">
-                                    <i class="bi bi-bar-chart"></i> Analytics
-                                </a>
-                            {% endif %}
+                                {% if user.profile.role in 'EDITOR,DEPT_ADMIN,ADMIN' %}
+                                    <a href="{% url 'journal_app:review_statistics' department.slug %}" 
+                                       class="list-group-item list-group-item-action">
+                                        <i class="bi bi-graph-up"></i> Review Statistics
+                                    </a>
+                                    <a href="{% url 'journal_app:bulk_article_management' department.slug %}" 
+                                       class="list-group-item list-group-item-action">
+                                        <i class="bi bi-collection"></i> Bulk Management
+                                    </a>
+                                    <a href="{% url 'journal_app:department_analytics' department.slug %}" 
+                                       class="list-group-item list-group-item-action">
+                                        <i class="bi bi-bar-chart"></i> Analytics
+                                    </a>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-                </div>
-                <!-- Main Content -->
-                <div class="col-md-9 col-lg-10 content-area">
-            {% else %}
-                <!-- Full-width Content -->
-                <div class="col-12 content-area">
-            {% endif %}
-                
-                <!-- Messages -->
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
+                    <!-- Main Content -->
+                    <div class="col-md-9 col-lg-10 content-area">
+                {% else %}
+                    <!-- Full-width Content -->
+                    <div class="col-12 content-area">
                 {% endif %}
-                
-                <!-- Page Content -->
-                {% block content %}{% endblock %}
+                    
+                    <!-- Messages -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <!-- Page Content -->
+                    {% block content %}{% endblock %}
+                </div>
             </div>
-        </div>
+        </main>
     </div>
 
+   
     <!-- Footer -->
-    <footer class="bg-dark text-light py-4 mt-5">
+    <footer class="footer mt-auto text-light">
         <div class="container">
             <div class="row">
-                <div class="col-md-6">
-                    <h5>University of Jos Journal System</h5>
-                    <p>A platform for academic publishing and research dissemination.</p>
+                <div class="col-md-4">
+                    <h5>About Us</h5>
+                    <p>Academic Journal Management System for scholarly publications and research.</p>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <h5>Quick Links</h5>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-light">About</a></li>
-                        <li><a href="#" class="text-light">Contact</a></li>
-                        <li><a href="#" class="text-light">Privacy Policy</a></li>
+                        <li><a href="{% url 'journal_app:department_home' %}" class="text-decoration-none text-white">Home</a></li>
+                        <li><a href="#" class="text-decoration-none text-white">Journals</a></li>
+                        <li><a href="#" class="text-decoration-none text-white">Submit Article</a></li>
+                        <li><a href="#" class="text-decoration-none text-white">Contact</a></li>
                     </ul>
                 </div>
-                <div class="col-md-3">
-                    <h5>Contact</h5>
-                    <address class="text-light">
-                        University of Jos<br>
-                        Jos, Plateau State<br>
-                        Nigeria
-                    </address>
+                <div class="col-md-4">
+                    <h5>Contact Info</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-envelope"></i> info@academicjournal.com</li>
+                        <li><i class="bi bi-phone"></i> +234 803 567 8900</li>
+                        <li><i class="bi bi-geo-alt"></i> University of Jos, Plateau, Nigeria</li>
+                    </ul>
                 </div>
             </div>
-            <div class="row mt-3">
-                <div class="col text-center">
-                    <small>&copy; {% now "Y" %} University of Jos. All rights reserved.</small>
+            <hr>
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0">&copy; {% now "Y" %} Academic Journal. All rights reserved.</p>
                 </div>
             </div>
         </div>

@@ -1,0 +1,68 @@
+{% extends 'journal_app/emails/base_email.html' %}
+
+{% block content %}
+<h2 style="color: #1a365d; font-size: 24px; font-weight: 600; margin: 0 0 20px 0;">
+    Article Published Successfully
+</h2>
+
+<p style="color: #4a5568; font-size: 16px; margin-bottom: 20px;">
+    Dear {{ author.get_full_name }},
+</p>
+
+<p style="color: #4a5568; font-size: 16px; margin-bottom: 30px;">
+    We are pleased to inform you that your article has been published in {{ journal.title }}.
+</p>
+
+<!-- Publication Details -->
+<div style="background-color: #f0f9ff; border-radius: 8px; padding: 25px; margin-bottom: 30px;">
+    <h3 style="color: #0369a1; font-size: 18px; margin: 0 0 15px 0;">
+        Publication Details
+    </h3>
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color: #4a5568;">
+        <tr>
+            <td style="padding: 8px 0; width: 120px;"><strong>Title:</strong></td>
+            <td style="padding: 8px 0;">{{ article.title }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0;"><strong>DOI:</strong></td>
+            <td style="padding: 8px 0;">{{ article.doi }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0;"><strong>Volume:</strong></td>
+            <td style="padding: 8px 0;">{{ article.volume.number }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0;"><strong>Issue:</strong></td>
+            <td style="padding: 8px 0;">{{ article.issue.number }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0;"><strong>Published:</strong></td>
+            <td style="padding: 8px 0;">{{ article.publication_date|date:"F j, Y" }}</td>
+        </tr>
+    </table>
+</div>
+
+<!-- Access Links -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 30px;">
+    <tr>
+        <td align="center">
+            <a href="{{ article_url }}" style="display: inline-block; background: linear-gradient(135deg, #2d5a9e 0%, #1a365d 100%); color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 0 10px;">
+                VIEW ARTICLE
+            </a>
+            <a href="{{ pdf_url }}" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 0 10px;">
+                DOWNLOAD PDF
+            </a>
+        </td>
+    </tr>
+</table>
+
+<!-- Citation Information -->
+<div style="background-color: #f8fafc; border-radius: 8px; padding: 25px; margin-bottom: 30px;">
+    <h3 style="color: #2d5a9e; font-size: 18px; margin: 0 0 15px 0;">
+        How to Cite
+    </h3>
+    <p style="color: #4a5568; font-family: monospace; background-color: #ffffff; padding: 15px; border-radius: 4px; margin: 0;">
+        {{ article.citation_format }}
+    </p>
+</div>
+{% endblock %}

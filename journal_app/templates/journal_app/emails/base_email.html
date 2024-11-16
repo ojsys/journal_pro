@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ department.name }}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; background-color: #f6f9fc; color: #2d3748;">
+    <!-- Main Container -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f6f9fc; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <!-- Content Container -->
+                <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 40px 0; background: linear-gradient(135deg, #1a365d 0%, #2d5a9e 100%); border-radius: 8px 8px 0 0;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center">
+                                        <!-- Department Logo -->
+                                        {% if department.logo %}
+                                        <img src="{{ department.logo.url }}" alt="{{ department.name }}" style="max-width: 200px; margin-bottom: 20px;">
+                                        {% endif %}
+                                        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600; text-align: center;">
+                                            {{ department.name }}
+                                        </h1>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Content Area -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            {% block content %}{% endblock %}
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8fafc; border-radius: 0 0 8px 8px; padding: 30px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding-bottom: 20px;">
+                                        <p style="margin: 0; color: #64748b; font-size: 14px;">
+                                            {{ department.name }}<br>
+                                            University of Jos
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center">
+                                        <table border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td>
+                                                    <a href="#" style="padding: 0 10px; color: #2d5a9e; text-decoration: none; font-size: 14px;">Website</a>
+                                                </td>
+                                                <td>
+                                                    <a href="mailto:{{ department.email }}" style="padding: 0 10px; color: #2d5a9e; text-decoration: none; font-size: 14px;">Contact</a>
+                                                </td>
+                                                <td>
+                                                    <a href="#" style="padding: 0 10px; color: #2d5a9e; text-decoration: none; font-size: 14px;">Guidelines</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Footer Note -->
+                <table border="0" cellpadding="0" cellspacing="0" width="600">
+                    <tr>
+                        <td align="center" style="padding: 20px 0;">
+                            <p style="margin: 0; color: #64748b; font-size: 12px;">
+                                This is an automated message. Please do not reply directly to this email.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

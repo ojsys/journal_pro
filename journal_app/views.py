@@ -13,7 +13,10 @@ from django.db.models import Q, Count, Sum
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
+from django.contrib.auth import login, logout, authenticate
+from django.views.decorators.http import require_http_methods
 
+from .notifications import NotificationManager
 from .models import (Department, DepartmentSettings, Profile, Journal, Article,
                     ArticleFile, Review, ReviewAttachment, EmailLog, AuditLog)
 from .forms import (DepartmentForm, DepartmentSettingsForm, UserRegistrationForm,
@@ -21,7 +24,89 @@ from .forms import (DepartmentForm, DepartmentSettingsForm, UserRegistrationForm
                    ReviewForm, ReviewAssignmentForm, ReviewResponseForm,
                    BulkArticleActionForm)
 
+
+
+# Authentication Views
+def login(request):
+    if request.user.is_authenticated:
+        return redirect('journal_app:home')
+        
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            next_url = request.GET.get('next', 'journal_app:home')
+            return redirect(next_url)
+        else:
+            messages.error(request, 'Invalid username or password.')
+    
+    return render(request, 'registration/login.html')
+
+@require_http_methods(["GET", "POST"])
+def logout_view(request):
+    if request.method == 'POST':
+        logout(request)
+        return redirect('login')
+    return render(request, 'registration/logout.html')
+
+
+# def register_view(request):
+#     if request.user.is_authenticated:
+#         return redirect('journal_app:home')
+        
+#     if request.method == 'POST':
+#         form = UserRegistrationForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             user = form.save()
+#             login(request, user)
+#             messages.success(request, 'Registration successful!')
+#             return redirect('journal_app:home')
+#     else:
+#         form = UserRegistrationForm()
+    
+#     return render(request, 'registration/register.html', {'form': form})
+
+
+# User Management Views
+def register(request):
+    """User registration"""
+    if request.method == 'POST':
+        user_form = UserRegistrationForm(request.POST)
+        profile_form = ProfileForm(request.POST, request.FILES)
+        
+        if user_form.is_valid() and profile_form.is_valid():
+            user = user_form.save()
+            profile = profile_form.save(commit=False)
+            profile.user = user
+            profile.save()
+            
+            # Add user to selected departments
+            departments = user_form.cleaned_data['departments']
+            profile.departments.set(departments)
+            
+            messages.success(request, "Registration successful. Please log in.")
+            return redirect('login')
+    else:
+        user_form = UserRegistrationForm()
+        profile_form = ProfileForm()
+    
+    return render(request, 'journal_app/register.html', {
+        'form': user_form,
+        'form2': profile_form
+    })
+
+############## End Athentication ##################### 
+
 # Department Views
+
+def department_home(request):
+    context = {}
+    return render(request, 'journal_app/department_home.html', context)
+
+
 @login_required
 def department_list(request):
     """View all departments"""
@@ -134,6 +219,11 @@ def article_submit(request, dept_slug, journal_slug=None):
             article.save()
             form.save_m2m()  # Save many-to-many relationships
             
+            if article.save():
+                notifier = NotificationManager(request)
+                notifier.send_submission_confirmation(article)
+                notifier.notify_editors_new_submission(article)
+
             # Create article files
             if 'supplementary_files' in request.FILES:
                 for file in request.FILES.getlist('supplementary_files'):
@@ -286,33 +376,7 @@ def review_submit(request, dept_slug, review_id):
         'form': form
     })
 
-# User Management Views
-def register(request):
-    """User registration"""
-    if request.method == 'POST':
-        user_form = UserRegistrationForm(request.POST)
-        profile_form = ProfileForm(request.POST, request.FILES)
-        
-        if user_form.is_valid() and profile_form.is_valid():
-            user = user_form.save()
-            profile = profile_form.save(commit=False)
-            profile.user = user
-            profile.save()
-            
-            # Add user to selected departments
-            departments = user_form.cleaned_data['departments']
-            profile.departments.set(departments)
-            
-            messages.success(request, "Registration successful. Please log in.")
-            return redirect('login')
-    else:
-        user_form = UserRegistrationForm()
-        profile_form = ProfileForm()
-    
-    return render(request, 'journal_app/register.html', {
-        'user_form': user_form,
-        'profile_form': profile_form
-    })
+
 
 @login_required
 def profile_edit(request):
@@ -699,3 +763,5 @@ def send_bulk_notifications(request, dept_slug):
         'department': department,
         'recipient_roles': Profile.ROLES
     })
+
+

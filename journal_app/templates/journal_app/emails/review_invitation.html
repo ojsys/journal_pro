@@ -1,0 +1,63 @@
+{% extends 'journal_app/emails/base_email.html' %}
+
+{% block content %}
+<h2 style="color: #1a365d; font-size: 24px; font-weight: 600; margin: 0 0 20px 0;">
+    Invitation to Review
+</h2>
+
+<p style="color: #4a5568; font-size: 16px; margin-bottom: 20px;">
+    Dear {{ reviewer.get_full_name }},
+</p>
+
+<p style="color: #4a5568; font-size: 16px; margin-bottom: 30px;">
+    You are invited to review a manuscript for {{ department.name }}. Your expertise would be valuable in evaluating this submission.
+</p>
+
+<!-- Article Details Box -->
+<div style="background-color: #f8fafc; border-radius: 8px; padding: 25px; margin-bottom: 30px;">
+    <h3 style="color: #2d5a9e; font-size: 18px; margin: 0 0 15px 0;">
+        Manuscript Details
+    </h3>
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color: #4a5568;">
+        <tr>
+            <td style="padding: 8px 0; width: 120px;"><strong>Title:</strong></td>
+            <td style="padding: 8px 0;">{{ article.title }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0;"><strong>Abstract:</strong></td>
+            <td style="padding: 8px 0;">{{ article.abstract|truncatewords:50 }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0;"><strong>Due Date:</strong></td>
+            <td style="padding: 8px 0;">{{ due_date|date:"F j, Y" }}</td>
+        </tr>
+    </table>
+</div>
+
+<!-- Response Buttons -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 30px;">
+    <tr>
+        <td align="center">
+            <a href="{{ accept_url }}" style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 0 10px;">
+                ACCEPT INVITATION
+            </a>
+            <a href="{{ decline_url }}" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 0 10px;">
+                DECLINE
+            </a>
+        </td>
+    </tr>
+</table>
+
+<!-- Review Guidelines -->
+<div style="background-color: #f8fafc; border-radius: 8px; padding: 25px; margin-bottom: 30px;">
+    <h3 style="color: #2d5a9e; font-size: 18px; margin: 0 0 15px 0;">
+        Review Guidelines
+    </h3>
+    <ul style="color: #4a5568; margin: 0; padding-left: 20px;">
+        <li style="margin-bottom: 10px;">Reviews should be completed within {{ review_deadline_days }} days</li>
+        <li style="margin-bottom: 10px;">Focus on methodology, relevance, and contribution to the field</li>
+        <li style="margin-bottom: 10px;">Provide constructive feedback for authors</li>
+        <li style="margin-bottom: 10px;">Maintain confidentiality throughout the review process</li>
+    </ul>
+</div>
+{% endblock %}

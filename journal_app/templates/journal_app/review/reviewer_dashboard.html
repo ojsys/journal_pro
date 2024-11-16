@@ -1,0 +1,217 @@
+<!-- templates/journal_app/review/reviewer_dashboard.html -->
+{% extends 'journal_app/base.html' %}
+    
+{% block title %}Reviewer Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Statistics Cards -->
+        <div class="col-12 mb-4">
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">Pending Reviews</h6>
+                            <h2 class="mb-0">{{ pending_reviews.count }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">Completed Reviews</h6>
+                            <h2 class="mb-0">{{ completed_reviews.count }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">Average Time</h6>
+                            <h2 class="mb-0">{{ review_statistics.average_days }} days</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">Due Soon</h6>
+                            <h2 class="mb-0">{{ review_statistics.due_soon_count }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Reviews -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Pending Reviews</h5>
+                </div>
+                <div class="card-body">
+                    {% if pending_reviews %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Article</th>
+                                        <th>Assigned</th>
+                                        <th>Due Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for review in pending_reviews %}
+                                        <tr>
+                                            <td>{{ review.article.title }}</td>
+                                            <td>{{ review.assigned_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                <span class="{% if review.is_overdue %}text-danger{% endif %}">
+                                                    {{ review.due_date|date:"M d, Y" }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if review.is_overdue %}
+                                                    <span class="badge bg-danger">Overdue</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'submit_review' department.slug review.id %}" 
+                                                   class="btn btn-sm btn-primary">
+                                                    Start Review
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No pending reviews.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Completed Reviews -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Completed Reviews</h5>
+                </div>
+                <div class="card-body">
+                    {% if completed_reviews %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Article</th>
+                                        <th>Completed</th>
+                                        <th>Decision</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for review in completed_reviews %}
+                                        <tr>
+                                            <td>{{ review.article.title }}</td>
+                                            <td>{{ review.completion_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if review.recommendation == 'ACCEPT' %}bg-success
+                                                    {% elif review.recommendation == 'REJECT' %}bg-danger
+                                                    {% else %}bg-warning{% endif %}">
+                                                    {{ review.get_recommendation_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'review_detail' department.slug review.id %}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    View Review
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No completed reviews.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Review Guidelines -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Reviewer Guidelines</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Review Process</h6>
+                        <ol class="mb-0">
+                            <li>Read the manuscript thoroughly</li>
+                            <li>Consider methodology and results</li>
+                            <li>Evaluate presentation and clarity</li>
+                            <li>Provide constructive feedback</li>
+                            <li>Make clear recommendations</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Performance -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Your Performance</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="reviewChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Review performance chart
+    const ctx = document.getElementById('reviewChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ review_statistics.months|safe }},
+            datasets: [{
+                label: 'Reviews Completed',
+                data: {{ review_statistics.completed_counts|safe }},
+                borderColor: '#0d6efd',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

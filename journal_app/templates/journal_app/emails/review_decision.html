@@ -1,0 +1,86 @@
+<!-- templates/journal_app/emails/review_decision.html -->
+{% extends 'journal_app/emails/base_email.html' %}
+
+{% block content %}
+<h2 style="color: #1a365d; font-size: 24px; font-weight: 600; margin: 0 0 20px 0;">
+    Editorial Decision
+</h2>
+
+<p style="color: #4a5568; font-size: 16px; margin-bottom: 20px;">
+    Dear {{ author.get_full_name }},
+</p>
+
+<p style="color: #4a5568; font-size: 16px; margin-bottom: 30px;">
+    We have reached a decision regarding your submission to {{ department.name }}.
+</p>
+
+<!-- Decision Box -->
+<div style="background-color: #f8fafc; border-radius: 8px; padding: 25px; margin-bottom: 30px;">
+    <h3 style="color: #2d5a9e; font-size: 18px; margin: 0 0 15px 0;">
+        Decision: {{ decision }}
+    </h3>
+    
+    {% if decision == 'ACCEPTED' %}
+    <div style="background-color: #d1fae5; border-radius: 6px; padding: 15px; margin-bottom: 15px;">
+        <p style="color: #065f46; margin: 0;">
+            Congratulations! Your manuscript has been accepted for publication.
+        </p>
+    </div>
+    {% elif decision == 'REVISION_REQUIRED' %}
+    <div style="background-color: #fff7ed; border-radius: 6px; padding: 15px; margin-bottom: 15px;">
+        <p style="color: #9a3412; margin: 0;">
+            Your manuscript requires revision before it can be accepted for publication.
+        </p>
+    </div>
+    {% else %}
+    <div style="background-color: #fee2e2; border-radius: 6px; padding: 15px; margin-bottom: 15px;">
+        <p style="color: #991b1b; margin: 0;">
+            We regret to inform you that your manuscript has not been accepted for publication.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Editor's Comments -->
+<div style="background-color: #f8fafc; border-radius: 8px; padding: 25px; margin-bottom: 30px;">
+    <h3 style="color: #2d5a9e; font-size: 18px; margin: 0 0 15px 0;">
+        Editor's Comments
+    </h3>
+    <div style="color: #4a5568;">
+        {{ feedback|linebreaks }}
+    </div>
+</div>
+
+<!-- Next Steps -->
+<div style="margin-bottom: 30px;">
+    <h3 style="color: #2d5a9e; font-size: 18px; margin: 0 0 15px 0;">
+        Next Steps
+    </h3>
+    {% if decision == 'ACCEPTED' %}
+    <ol style="color: #4a5568;">
+        <li style="margin-bottom: 10px;">Review the publication agreement</li>
+        <li style="margin-bottom: 10px;">Submit final manuscript files</li>
+        <li style="margin-bottom: 10px;">Complete any necessary forms</li>
+        <li style="margin-bottom: 10px;">Await proofs for review</li>
+    </ol>
+    {% elif decision == 'REVISION_REQUIRED' %}
+    <ol style="color: #4a5568;">
+        <li style="margin-bottom: 10px;">Review all reviewer comments carefully</li>
+        <li style="margin-bottom: 10px;">Prepare a point-by-point response</li>
+        <li style="margin-bottom: 10px;">Submit revised manuscript within {{ revision_deadline_days }} days</li>
+        <li style="margin-bottom: 10px;">Include a cover letter detailing changes made</li>
+    </ol>
+    {% endif %}
+</div>
+
+<!-- Action Button -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 30px;">
+    <tr>
+        <td align="center">
+            <a href="{{ article_url }}" style="display: inline-block; background: linear-gradient(135deg, #2d5a9e 0%, #1a365d 100%); color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                VIEW FULL DECISION
+            </a>
+        </td>
+    </tr>
+</table>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'journal_app/base.html' %}
+
+{% block title %}Submission Error{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-exclamation-circle text-danger" style="font-size: 4rem;"></i>
+                </div>
+                <h2 class="card-title mb-4">Submission Error</h2>
+                <p class="card-text">{{ error_message }}</p>
+                
+                {% if form_errors %}
+                    <div class="alert alert-danger text-start mt-4">
+                        <h5>Please correct the following errors:</h5>
+                        <ul class="mb-0">
+                            {% for field, errors in form_errors.items %}
+                                <li>
+                                    <strong>{{ field }}:</strong>
+                                    {{ errors|join:", " }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+                
+                <div class="mt-4">
+                    <button class="btn btn-primary me-2" onclick="window.history.back();">
+                        Go Back
+                    </button>
+                    <a href="{% url 'journal_app:department_dashboard' department.slug %}" 
+                       class="btn btn-outline-primary">
+                        Go to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Need Help?</h5>
+            </div>
+            <div class="card-body">
+                <h6>Common Issues:</h6>
+                <ul class="mb-4">
+                    <li>File size exceeds the maximum limit (10MB)</li>
+                    <li>Unsupported file format (only PDF, DOC, DOCX allowed)</li>
+                    <li>Missing required fields in the submission form</li>
+                    <li>Network connectivity issues</li>
+                </ul>
+                
+                <h6>What to Do:</h6>
+                <ol class="mb-4">
+                    <li>Check your file sizes and formats</li>
+                    <li>Ensure all required fields are filled out</li>
+                    <li>Save your work locally before submitting</li>
+                    <li>Try submitting again after a few minutes</li>
+                </ol>
+                
+                <div class="text-center">
+                    <a href="mailto:{{ department.settings.contact_email }}" class="btn btn-outline-primary">
+                        <i class="bi bi-envelope"></i> Contact Support
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
