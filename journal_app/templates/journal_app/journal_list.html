@@ -1,0 +1,103 @@
+{% extends 'journal_app/base.html' %}
+{% load static %}
+
+{% block title %}All Journals - Academic Journal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                    url('{% static "images/journal-header.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        padding: 80px 0;
+        color: white;
+        margin-bottom: 40px;
+    }
+
+    .journal-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        margin-bottom: 30px;
+    }
+
+    .journal-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .journal-card .card-img-top {
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .journal-meta {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+
+    .journal-meta i {
+        margin-right: 5px;
+        color: #0d6efd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="text-center">
+            <h1 class="display-4 mb-3">Academic Journals</h1>
+            <p class="lead">Explore our collection of peer-reviewed academic journals</p>
+        </div>
+    </div>
+</section>
+
+<!-- Journals List -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            {% for journal in journals %}
+            <div class="col-md-6 col-lg-4">
+                <div class="journal-card card">
+                    {% if journal.cover_image %}
+                    <img src="{{ journal.cover_image.url }}" class="card-img-top" alt="{{ journal.title }}">
+                    {% endif %}
+                    <div class="card-body p-4">
+                        <h5 class="card-title h4 mb-3">{{ journal.title }}</h5>
+                        <div class="journal-meta">
+                            <div class="mb-2">
+                                <i class="bi bi-calendar-event"></i>
+                                <span>Latest Issue: {{ journal.latest_issue_date|date:"F Y" }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <i class="bi bi-person-circle"></i>
+                                <span>Editor: {{ journal.editor_in_chief.get_full_name }}</span>
+                            </div>
+                            <div>
+                                <i class="bi bi-journal-text"></i>
+                                <span>{{ journal.articles.count }} Articles</span>
+                            </div>
+                        </div>
+                        <p class="card-text text-muted mb-4">{{ journal.description|truncatewords:20 }}</p>
+                        <a href="{% url 'journal_app:journal_detail' journal.slug %}" class="btn btn-primary">View Journal</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle me-2"></i>
+                    No journals available at the moment.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

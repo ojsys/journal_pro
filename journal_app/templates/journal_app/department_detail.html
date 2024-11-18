@@ -1,0 +1,445 @@
+{% extends 'journal_app/base.html' %}
+{% load static %}
+
+{% block title %}{{ department.get_name_display }} - Academic Journal{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Department Header */
+    .department-header {
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                    url('{% static "images/department-bg.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        padding: 100px 0;
+        color: white;
+        position: relative;
+    }
+
+    .department-logo {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    /* Stats Cards */
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        color: #0d6efd;
+        margin-bottom: 15px;
+    }
+
+    /* Team Section */
+    .team-card {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .team-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 20px;
+        border: 5px solid #f8f9fa;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    /* Journal Cards */
+    .journal-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+        height: 100%;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .journal-card:hover {
+        transform: translateY(-5px);
+    }
+
+    /* Contact Section */
+    .contact-info {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 30px;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .contact-icon {
+        font-size: 1.5rem;
+        color: #0d6efd;
+        margin-right: 15px;
+    }
+
+    /* Action Buttons */
+    .action-button {
+        padding: 12px 30px;
+        border-radius: 30px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+    }
+
+    .action-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Department Header -->
+<section class="department-header">
+    <div class="container text-center">
+        {% if department.logo %}
+            <img src="{{ department.logo.url }}" alt="{{ department.get_name_display }} Logo" class="department-logo">
+        {% endif %}
+        <h1 class="display-4 mb-3">{{ department.get_name_display }}</h1>
+        <p class="lead mb-4">{{ department.description }}</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'journal_app:article_submit' department.slug %}" class="btn btn-primary btn-lg action-button">
+                <i class="bi bi-plus-circle me-2"></i>Submit Article
+            </a>
+            <a href="#journals" class="btn btn-outline-light btn-lg action-button">
+                <i class="bi bi-journal-text me-2"></i>View Journals
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Department Stats -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <i class="bi bi-journal-richtext stat-icon"></i>
+                    <h3 class="h2 mb-2">{{ department.journal_set.count }}</h3>
+                    <p class="text-muted mb-0">Active Journals</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <i class="bi bi-file-text stat-icon"></i>
+                    <h3 class="h2 mb-2">{{ total_articles }}</h3>
+                    <p class="text-muted mb-0">Published Articles</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <i class="bi bi-people stat-icon"></i>
+                    <h3 class="h2 mb-2">{{ total_authors }}</h3>
+                    <p class="text-muted mb-0">Active Authors</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <i class="bi bi-graph-up stat-icon"></i>
+                    <h3 class="h2 mb-2">{{ total_citations }}</h3>
+                    <p class="text-muted mb-0">Total Citations</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Department Leadership -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Department Leadership</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="team-card">
+                    {% if department.head_of_dept.profile.profile_picture %}
+                        <img src="{{ department.head_of_dept.profile.profile_picture.url }}" alt="HOD" class="team-avatar">
+                    {% else %}
+                        <i class="bi bi-person-circle" style="font-size: 150px; color: #dee2e6;"></i>
+                    {% endif %}
+                    <h3 class="h4 mb-2">{{ department.head_of_dept.get_full_name }}</h3>
+                    <p class="text-muted mb-2">Head of Department</p>
+                    <p class="mb-3">{{ department.head_of_dept.profile.academic_title }}</p>
+                    <a href="mailto:{{ department.head_of_dept.email }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-envelope me-2"></i>Contact
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Department Journals -->
+<section class="py-5" id="journals">
+    <div class="container">
+        <h2 class="text-center mb-5">Our Journals</h2>
+        <div class="row g-4">
+            {% for journal in department.journal_set.all %}
+            <div class="col-md-6 col-lg-4">
+                <div class="journal-card card">
+                    {% if journal.cover_image %}
+                    <img src="{{ journal.cover_image.url }}" class="card-img-top" alt="{{ journal.title }}">
+                    {% endif %}
+                    <div class="card-body p-4">
+                        <h5 class="card-title mb-3">{{ journal.title }}</h5>
+                        <div class="journal-meta mb-3">
+                            <div class="mb-2">
+                                <i class="bi bi-calendar-event me-2"></i>
+                                Latest Issue: {{ journal.latest_issue_date|date:"F Y" }}
+                            </div>
+                            <div>
+                                <i class="bi bi-person-circle me-2"></i>
+                                Editor: {{ journal.editor_in_chief.get_full_name }}
+                            </div>
+                        </div>
+                        <p class="card-text text-muted">{{ journal.description|truncatewords:30 }}</p>
+                        <a href="{% url 'journal_app:journal_detail' journal.slug %}" class="btn btn-primary">
+                            View Journal
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle me-2"></i>
+                    No journals available at the moment.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Research Areas Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Research Areas</h2>
+        <div class="row g-4">
+            {% for area in research_areas %}
+            <div class="col-md-4">
+                <div class="research-area-card">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="research-icon mb-3">
+                                <i class="bi bi-lightbulb text-primary"></i>
+                            </div>
+                            <h3 class="h5 mb-3">{{ area.name }}</h3>
+                            <p class="text-muted mb-0">{{ area.description }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Recent Publications -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Recent Publications</h2>
+            <a href="#" class="btn btn-outline-primary">View All</a>
+        </div>
+        <div class="row g-4">
+            {% for article in recent_articles %}
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="badge bg-primary">{{ article.journal.title }}</span>
+                            <small class="text-muted">{{ article.publication_date|date }}</small>
+                        </div>
+                        <h5 class="card-title mb-3">{{ article.title }}</h5>
+                        <p class="text-muted mb-3">{{ article.abstract|truncatewords:30 }}</p>
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="bi bi-people me-2"></i>
+                                Authors: {{ article.author.get_full_name }}
+                                {% for co_author in article.co_authors.all %}
+                                    {% if forloop.first %}, {% endif %}
+                                    {{ co_author.get_full_name }}
+                                    {% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </small>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="me-3"><i class="bi bi-quote me-1"></i>{{ article.citation_count }}</span>
+                                <span><i class="bi bi-download me-1"></i>{{ article.download_count }}</span>
+                            </div>
+                            <a href="#" class="btn btn-outline-primary btn-sm">Read More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle me-2"></i>
+                    No recent publications available.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Faculty Members -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Our Faculty</h2>
+        <div class="row g-4">
+            {% for faculty in faculty_members %}
+            <div class="col-md-3">
+                <div class="card faculty-card border-0 shadow-sm text-center">
+                    <div class="card-body p-4">
+                        {% if faculty.profile.profile_picture %}
+                            <img src="{{ faculty.profile.profile_picture.url }}" 
+                                 alt="{{ faculty.get_full_name }}" 
+                                 class="rounded-circle mb-3"
+                                 style="width: 120px; height: 120px; object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3"
+                                 style="width: 120px; height: 120px;">
+                                <i class="bi bi-person-circle" style="font-size: 3rem; color: #dee2e6;"></i>
+                            </div>
+                        {% endif %}
+                        <h5 class="card-title mb-1">{{ faculty.get_full_name }}</h5>
+                        <p class="text-muted mb-2">{{ faculty.profile.academic_title }}</p>
+                        <p class="small text-muted mb-3">{{ faculty.profile.expertise }}</p>
+                        <div class="faculty-social">
+                            {% if faculty.profile.orcid_id %}
+                            <a href="https://orcid.org/{{ faculty.profile.orcid_id }}" 
+                               class="btn btn-sm btn-outline-primary me-2"
+                               target="_blank">
+                                <i class="bi bi-award"></i>
+                            </a>
+                            {% endif %}
+                            <a href="mailto:{{ faculty.email }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Upcoming Events -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Upcoming Events</h2>
+        <div class="row g-4">
+            {% for event in upcoming_events %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card event-card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="event-date mb-3">
+                            <span class="display-4 text-primary">{{ event.date|date:"d" }}</span>
+                            <span class="text-muted">{{ event.date|date:"M Y" }}</span>
+                        </div>
+                        <h5 class="card-title mb-3">{{ event.title }}</h5>
+                        <p class="text-muted mb-3">{{ event.description }}</p>
+                        <div class="event-details">
+                            <p class="mb-2">
+                                <i class="bi bi-clock me-2"></i>
+                                {{ event.time|time:"g:i A" }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="bi bi-geo-alt me-2"></i>
+                                {{ event.location }}
+                            </p>
+                            {% if event.registration_required %}
+                            <a href="{{ event.registration_link }}" class="btn btn-primary btn-sm mt-3">
+                                Register Now
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle me-2"></i>
+                    No upcoming events at the moment.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Resources Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Department Resources</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card resource-card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="resource-icon mb-3">
+                            <i class="bi bi-journal-text text-primary"></i>
+                        </div>
+                        <h3 class="h5 mb-3">Publication Guidelines</h3>
+                        <p class="text-muted mb-3">Access our comprehensive guide for authors and researchers.</p>
+                        <a href="#" class="btn btn-outline-primary btn-sm">Download PDF</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card resource-card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="resource-icon mb-3">
+                            <i class="bi bi-calendar-check text-primary"></i>
+                        </div>
+                        <h3 class="h5 mb-3">Academic Calendar</h3>
+                        <p class="text-muted mb-3">View important dates and deadlines for the academic year.</p>
+                        <a href="#" class="btn btn-outline-primary btn-sm">View Calendar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card resource-card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="resource-icon mb-3">
+                            <i class="bi bi-file-earmark-text text-primary"></i>
+                        </div>
+                        <h3 class="h5 mb-3">Forms & Documents</h3>
+                        <p class="text-muted mb-3">Access all necessary forms and documentation.</p>
+                        <a href="#" class="btn btn-outline-primary btn-sm">Browse Forms</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

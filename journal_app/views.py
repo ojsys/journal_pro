@@ -18,7 +18,7 @@ from django.views.decorators.http import require_http_methods
 
 from .notifications import NotificationManager
 from .models import (Department, DepartmentSettings, Profile, Journal, Article,
-                    ArticleFile, Review, ReviewAttachment, EmailLog, AuditLog)
+                    ArticleFile, Review, ReviewAttachment, EmailLog, AuditLog, Event, CustomUser, ResearchArea)
 from .forms import (DepartmentForm, DepartmentSettingsForm, UserRegistrationForm,
                    ProfileForm, JournalForm, ArticleSubmissionForm, ArticleFileForm,
                    ReviewForm, ReviewAssignmentForm, ReviewResponseForm,
@@ -122,20 +122,59 @@ def department_list(request):
         'departments': departments
     })
 
-@login_required
+# @login_required
+# def department_detail(request, dept_slug):
+#     """View department details"""
+#     department = get_object_or_404(Department, slug=dept_slug, is_active=True)
+#     journals = Journal.objects.filter(department=department, is_active=True)
+#     recent_articles = Article.objects.filter(
+#         department=department,
+#         status='PUBLISHED'
+#     ).order_by('-publication_date')[:5]
+    
+#     context = {
+#         'department': department,
+#         'journals': journals,
+#         'recent_articles': recent_articles
+#     }
+#     return render(request, 'journal_app/department_detail.html', context)
+
 def department_detail(request, dept_slug):
-    """View department details"""
-    department = get_object_or_404(Department, slug=dept_slug, is_active=True)
-    journals = Journal.objects.filter(department=department, is_active=True)
+    department = get_object_or_404(Department, slug=dept_slug)
+    
+    # Calculate department statistics
+    total_articles = Article.objects.filter(journal__department=department).count()
+    total_authors = CustomUser.objects.filter(authored_articles__journal__department=department).distinct().count()
+    total_citations = Article.objects.filter(journal__department=department).aggregate(
+        total_citations=Sum('citation_count')
+    )['total_citations'] or 0
+    
+    # Get recent articles
     recent_articles = Article.objects.filter(
+        journal__department=department
+    ).order_by('-publication_date')[:4]
+    
+    # Get faculty members
+    faculty_members = department.faculty_members.all()
+    
+    # Get upcoming events
+    upcoming_events = Event.objects.filter(
         department=department,
-        status='PUBLISHED'
-    ).order_by('-publication_date')[:5]
+        date__gte=timezone.now()
+    ).order_by('date')[:3]
+    
+    # Get research areas
+    research_areas = ResearchArea.objects.filter(department=department)
     
     context = {
         'department': department,
-        'journals': journals,
-        'recent_articles': recent_articles
+        'total_articles': total_articles,
+        'total_authors': total_authors,
+        'total_citations': total_citations,
+        'recent_articles': recent_articles,
+        'faculty_members': faculty_members,
+        'upcoming_events': upcoming_events,
+        'research_areas': research_areas,
     }
     return render(request, 'journal_app/department_detail.html', context)
 
@@ -168,16 +207,28 @@ def department_manage(request, dept_slug):
         'settings_form': settings_form
     })
 
+
 # Journal Views
-@login_required
-def journal_list(request, dept_slug):
-    """List all journals in a department"""
-    department = get_object_or_404(Department, slug=dept_slug)
-    journals = Journal.objects.filter(department=department, is_active=True)
-    return render(request, 'journal_app/journal_list.html', {
-        'department': department,
-        'journals': journals
-    })
+# @login_required
+# def journal_list(request, dept_slug):
+#     """List all journals in a department"""
+#     department = get_object_or_404(Department, slug=dept_slug)
+#     journals = Journal.objects.filter(department=department, is_active=True)
+#     return render(request, 'journal_app/journal_list.html', {
+#         'department': department,
+#         'journals': journals
+#     })
+
+def journal_list(request):
+    journals = Journal.objects.all().order_by('-created_at')
+    departments = Department.objects.filter(is_active=True)
+    
+    context = {
+        'journals': journals,
+        'departments': departments,  # Include departments for the navigation
+    }
+    return render(request, 'journal_app/journal_list.html', context)
+
 
 @login_required
 def journal_detail(request, dept_slug, journal_slug):
@@ -772,3 +823,5 @@ def send_bulk_notifications(request, dept_slug):
     })
 
 
+def bulk_article_management(request, dept_slug):
+    pass

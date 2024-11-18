@@ -19,23 +19,29 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
     # Home and Registration
-    path('', views.department_home, name='department_home'),
+    
     path('register/', views.register, name='register'),
-
+    
+    # Journal
+    path('journals/', views.journal_list, name='journal_list'),
+    path('journals/<slug:slug>/', views.journal_detail, name='journal_detail'),
+    
     # Department URLs
     path('departments/', views.department_list, name='department_list'),
     path('<slug:dept_slug>/', views.department_detail, name='department_detail'),
     path('<slug:dept_slug>/manage/', views.department_manage, name='department_manage'),
     path('<slug:dept_slug>/dashboard/', views.department_dashboard, name='department_dashboard'),
+    path('<slug:dept_slug>/article/department_analytics', views.department_analytics, name='department_analytics'),
 
     # Article URLs
     path('<slug:dept_slug>/submit/', views.article_submit, name='article_submit'),
     path('<slug:dept_slug>/article/<int:article_id>/', views.article_detail, name='article_detail'),
     path('<slug:dept_slug>/article/<int:article_id>/edit/', views.article_edit, name='article_edit'),
+    path('<slug:dept_slug>/article/bulk_article_management', views.bulk_article_management, name='bulk_article_management'),
+    
 
-    # Journal
-    path('journals/', views.journal_list, name='journal_list'),
-    path('journals/<slug:slug>/', views.journal_detail, name='journal_detail'),
+    # Home url
+    path('', views.department_home, name='department_home'),
 
     # Review URLs
     path('<slug:dept_slug>/article/<int:article_id>/assign-reviewers/', 

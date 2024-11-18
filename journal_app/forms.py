@@ -114,7 +114,7 @@ class ArticleSubmissionForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if department:
             self.fields['journal'].queryset = Journal.objects.filter(department=department)
-            self.fields['co_authors'].queryset = User.objects.filter(
+            self.fields['co_authors'].queryset = CustomUser.objects.filter(
                 profile__departments=department
             ).exclude(id=kwargs.get('initial', {}).get('author'))
 

@@ -44,6 +44,7 @@ class Department(models.Model):
     description = models.TextField()
     established_date = models.DateField()
     head_of_dept = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='headed_department')
+    faculty_members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='faculty_departments', blank=True)
     email = models.EmailField()
     phone = models.CharField(max_length=20, blank=True)
     address = models.TextField()
@@ -260,6 +261,31 @@ class ArticleFile(models.Model):
     class Meta:
         ordering = ['-upload_date', '-version']
 
+
+# ----------- Research Areas ----------------
+
+class ResearchArea(models.Model):
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+    
+    def __str__(self):
+        return self.name
+
+class Event(models.Model):
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    date = models.DateField()
+    time = models.TimeField()
+    location = models.CharField(max_length=200)
+    registration_required = models.BooleanField(default=False)
+    registration_link = models.URLField(blank=True, null=True)
+    
+    def __str__(self):
+        return self.title
+
+# ---------------- Reviews ---------------------
 class Review(models.Model):
     RECOMMENDATION_CHOICES = [
         ('ACCEPT', 'Accept'),
