@@ -7,104 +7,214 @@
 <style>
     /* Hero Section */
     .hero {
-        background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('{% static "images/library-bg.jpg" %}');
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                    url('{% static "images/hero-bg.jpg" %}');
         background-size: cover;
         background-position: center;
-        padding: 100px 0;
+        background-attachment: fixed;
+        padding: 150px 0;
         color: white;
+        position: relative;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        margin-bottom: 1.5rem;
+    }
+
+    .hero .lead {
+        font-size: 1.5rem;
+        font-weight: 300;
+        margin-bottom: 2rem;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
     }
 
     /* Department Cards */
     .department-card {
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        height: 100%;
+        background: white;
+    }
+
+    .department-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+
+    .department-icon {
+        width: 80px;
+        height: 80px;
+        background: #f8f9fa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: #0d6efd;
+        font-size: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .department-card:hover .department-icon {
+        background: #0d6efd;
+        color: white;
+    }
+
+    /* Stats Section */
+    .stats-section {
+        background: linear-gradient(rgba(13, 110, 253, 0.9), rgba(13, 110, 253, 0.9)), 
+                    url('{% static "images/stats-bg.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        padding: 80px 0;
+        color: white;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 30px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: white;
+    }
+
+    .stat-label {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+    }
+
+    /* Journal Cards */
+    .journal-section {
+        background-color: #f8f9fa;
+        padding: 80px 0;
+    }
+
+    .journal-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         height: 100%;
     }
 
-    .department-card:hover {
+    .journal-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
 
-    .department-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        color: #0d6efd;
-    }
-
-    /* Journal Cards */
-    .journal-card {
-        transition: transform 0.3s ease;
-        height: 100%;
-    }
-
-    .journal-card:hover {
-        transform: translateY(-3px);
+    .journal-card .card-img-top {
+        height: 200px;
+        object-fit: cover;
     }
 
     .journal-meta {
         font-size: 0.9rem;
         color: #6c757d;
+        margin-bottom: 1rem;
     }
 
-    /* Stats Section */
-    .stats-section {
-        background-color: #f8f9fa;
-        padding: 60px 0;
-    }
-
-    .stat-item {
-        text-align: center;
-        padding: 20px;
-    }
-
-    .stat-number {
-        font-size: 2.5rem;
-        font-weight: bold;
+    .journal-meta i {
+        margin-right: 5px;
         color: #0d6efd;
     }
 
-    .stat-label {
-        font-size: 1.1rem;
+    /* Section Headers */
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .section-header h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+
+    .section-header p {
         color: #6c757d;
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Buttons */
+    .btn-hero {
+        padding: 12px 30px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-hero:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero text-center">
-    <div class="container">
-        <h1 class="display-4 mb-4">Academic Excellence Through Research</h1>
-        <p class="lead mb-4">Discover groundbreaking research across multiple disciplines</p>
-        <a href="#departments" class="btn btn-primary btn-lg me-2">Submit Article</a>
-        <a href="#journals" class="btn btn-outline-light btn-lg">Browse Journals</a>
+<section class="hero">
+    <div class="container hero-content">
+        <h1 class="display-4 mb-4">Advancing Knowledge Through Research</h1>
+        <p class="lead mb-5">Discover groundbreaking research and scholarly publications across multiple disciplines</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="#departments" class="btn btn-primary btn-lg btn-hero">Start Publishing</a>
+            <a href="#journals" class="btn btn-outline-light btn-lg btn-hero">Explore Journals</a>
+        </div>
     </div>
 </section>
+
 
 <!-- Stats Section -->
 <section class="stats-section">
     <div class="container">
-        <div class="row">
+        <div class="row g-4">
             <div class="col-md-3 col-6">
                 <div class="stat-item">
+                    <i class="bi bi-file-text mb-3" style="font-size: 2rem;"></i>
                     <div class="stat-number">{{ total_articles }}</div>
                     <div class="stat-label">Published Articles</div>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="stat-item">
+                    <i class="bi bi-people mb-3" style="font-size: 2rem;"></i>
                     <div class="stat-number">{{ total_authors }}</div>
-                    <div class="stat-label">Authors</div>
+                    <div class="stat-label">Active Authors</div>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="stat-item">
+                    <i class="bi bi-quote mb-3" style="font-size: 2rem;"></i>
                     <div class="stat-number">{{ total_citations }}</div>
                     <div class="stat-label">Citations</div>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="stat-item">
+                    <i class="bi bi-download mb-3" style="font-size: 2rem;"></i>
                     <div class="stat-number">{{ total_downloads }}</div>
                     <div class="stat-label">Downloads</div>
                 </div>
@@ -114,14 +224,17 @@
 </section>
 
 <!-- Departments Section -->
-<section class="py-5">
+<section class="py-5" id="departments">
     <div class="container">
-        <h2 class="text-center mb-5">Our Departments</h2>
+        <div class="section-header">
+            <h2>Our Departments</h2>
+            <p>Explore our academic departments and contribute to your field of expertise</p>
+        </div>
         <div class="row g-4">
             {% for department in departments %}
             <div class="col-md-4">
-                <div class="card department-card">
-                    <div class="card-body text-center">
+                <div class="department-card card">
+                    <div class="card-body text-center p-4">
                         <div class="department-icon">
                             {% if department.name == 'ENGLISH' %}
                                 <i class="bi bi-book"></i>
@@ -131,8 +244,8 @@
                                 <i class="bi bi-globe"></i>
                             {% endif %}
                         </div>
-                        <h3 class="card-title">{{ department.get_name_display }}</h3>
-                        <p class="card-text">{{ department.description|truncatewords:30 }}</p>
+                        <h3 class="h4 mb-3">{{ department.get_name_display }}</h3>
+                        <p class="text-muted mb-4">{{ department.description|truncatewords:30 }}</p>
                         <a href="{% url 'journal_app:department_detail' department.slug %}" class="btn btn-outline-primary">Learn More</a>
                     </div>
                 </div>
@@ -143,36 +256,114 @@
 </section>
 
 <!-- Recent Journals Section -->
-<section class="py-5 bg-light" id="journals">
+<section class="journal-section" id="journals">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Recent Journals</h2>
-            <a href="{% url 'journal_app:journal_list' %}" class="btn btn-outline-primary">View All</a>
+        <div class="section-header">
+            <h2>Recent Publications</h2>
+            <p>Discover the latest research and academic journals from our departments</p>
         </div>
         <div class="row g-4">
             {% for journal in recent_journals %}
             <div class="col-md-6 col-lg-4">
-                <div class="card journal-card">
+                <div class="journal-card card">
                     {% if journal.cover_image %}
                     <img src="{{ journal.cover_image.url }}" class="card-img-top" alt="{{ journal.title }}">
                     {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ journal.title }}</h5>
-                        <p class="card-text">{{ journal.description|truncatewords:20 }}</p>
-                        <div class="journal-meta mb-3">
-                            <div><i class="bi bi-calendar"></i> Latest Issue: {{ journal.latest_issue_date|date }}</div>
-                            <div><i class="bi bi-person"></i> Editor: {{ journal.editor_in_chief.get_full_name }}</div>
+                    <div class="card-body p-4">
+                        <h5 class="card-title h4 mb-3">{{ journal.title }}</h5>
+                        <div class="journal-meta">
+                            <div class="mb-2">
+                                <i class="bi bi-calendar-event"></i>
+                                <span>Latest Issue: {{ journal.latest_issue_date|date:"F Y" }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <i class="bi bi-person-circle"></i>
+                                <span>Editor: {{ journal.editor_in_chief.get_full_name }}</span>
+                            </div>
+                            <div>
+                                <i class="bi bi-journal-text"></i>
+                                <span>{{ journal.articles.count }} Articles</span>
+                            </div>
                         </div>
+                        <p class="card-text text-muted mb-4">{{ journal.description|truncatewords:20 }}</p>
                         <a href="{% url 'journal_app:journal_detail' journal.slug %}" class="btn btn-primary">View Journal</a>
                     </div>
                 </div>
             </div>
             {% empty %}
             <div class="col-12">
-                <div class="alert alert-info">No journals available at the moment.</div>
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle me-2"></i>
+                    No journals available at the moment.
+                </div>
             </div>
             {% endfor %}
         </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'journal_app:journal_list' %}" class="btn btn-outline-primary btn-lg">View All Journals</a>
+        </div>
     </div>
 </section>
+
+<!-- Call to Action Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 text-center text-lg-start">
+                <h2 class="mb-3">Ready to Contribute?</h2>
+                <p class="lead mb-lg-0">Join our academic community and share your research with the world.</p>
+            </div>
+            <div class="col-lg-4 text-center text-lg-end">
+                <a href="#departments" class="btn btn-light btn-lg">Start Publishing</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+
+    // Optional: Add animation for stats when they come into view
+    const stats = document.querySelectorAll('.stat-number');
+    
+    const observerOptions = {
+        threshold: 0.5
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const target = entry.target;
+                const finalValue = parseInt(target.textContent);
+                animateValue(target, 0, finalValue, 2000);
+                observer.unobserve(target);
+            }
+        });
+    }, observerOptions);
+
+    stats.forEach(stat => observer.observe(stat));
+
+    function animateValue(obj, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            obj.innerHTML = Math.floor(progress * (end - start) + start);
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+</script>
 {% endblock %}
