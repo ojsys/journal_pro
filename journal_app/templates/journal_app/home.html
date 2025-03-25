@@ -1,0 +1,349 @@
+{% extends 'journal_app/base.html' %}
+{% load static %}
+
+{% block title %}Journal Pro - Academic Journal Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+  .hero-section {
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('{% static "images/library-bg.jpg" %}') no-repeat center center;
+    background-size: cover;
+    color: white;
+    padding: 100px 0;
+  }
+  
+  .feature-icon {
+    font-size: 2.5rem;
+    color: #0d6efd;
+    margin-bottom: 1rem;
+  }
+  
+  .department-card {
+    transition: transform 0.3s ease;
+  }
+  
+  .department-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  
+  .stats-section {
+    background-color: #f8f9fa;
+  }
+  
+  .stat-item {
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #0d6efd;
+  }
+  
+  .testimonial-card {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  .cta-section {
+    background-color: #0d6efd;
+    color: white;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="container text-center">
+    <h1 class="display-3 fw-bold mb-4">Academic Excellence in Publishing</h1>
+    <p class="lead mb-5">A comprehensive platform for managing academic journals, submissions, and peer reviews</p>
+    <div class="d-flex justify-content-center gap-3">
+      <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4 py-2">Get Started</a>
+      <a href="#features" class="btn btn-outline-light btn-lg px-4 py-2">Learn More</a>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5" id="features">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">Powerful Features for Academic Publishing</h2>
+      <p class="text-muted">Everything you need to manage the complete publication lifecycle</p>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="feature-icon">
+              <i class="bi bi-journal-text"></i>
+            </div>
+            <h4>Journal Management</h4>
+            <p class="text-muted">Organize journals, volumes, and issues with an intuitive interface</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="feature-icon">
+              <i class="bi bi-people"></i>
+            </div>
+            <h4>Peer Review System</h4>
+            <p class="text-muted">Streamline the review process with customizable workflows</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="feature-icon">
+              <i class="bi bi-graph-up"></i>
+            </div>
+            <h4>Analytics & Tracking</h4>
+            <p class="text-muted">Monitor submissions, reviews, and publication metrics</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="feature-icon">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <h4>Secure Submissions</h4>
+            <p class="text-muted">Protect intellectual property with robust security measures</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="feature-icon">
+              <i class="bi bi-envelope"></i>
+            </div>
+            <h4>Automated Notifications</h4>
+            <p class="text-muted">Keep all stakeholders informed throughout the process</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="feature-icon">
+              <i class="bi bi-calendar-event"></i>
+            </div>
+            <h4>Event Management</h4>
+            <p class="text-muted">Organize and promote academic events and conferences</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Departments Section -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">Featured Departments</h2>
+      <p class="text-muted">Explore our academic departments and their publications</p>
+    </div>
+    
+    <div class="row g-4">
+      {% for department in departments %}
+      <div class="col-md-4">
+        <div class="card h-100 department-card">
+          {% if department.logo %}
+          <img src="{{ department.logo.url }}" class="card-img-top" alt="{{ department.name }}">
+          {% else %}
+          <div class="bg-secondary text-white text-center py-5">
+            <h5>{{ department.get_name_display }}</h5>
+          </div>
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">{{ department.get_name_display }}</h5>
+            <p class="card-text text-muted">{{ department.description|truncatechars:100 }}</p>
+            <a href="{{ department.get_absolute_url }}" class="btn btn-outline-primary">View Department</a>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center">
+        <p>No departments available at the moment.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section py-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-3">
+        <div class="stat-item">
+          <div class="stat-number">{{ journals_count }}</div>
+          <div class="stat-label">Journals</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-item">
+          <div class="stat-number">{{ articles_count }}</div>
+          <div class="stat-label">Published Articles</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-item">
+          <div class="stat-number">{{ authors_count }}</div>
+          <div class="stat-label">Authors</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-item">
+          <div class="stat-number">{{ reviews_count }}</div>
+          <div class="stat-label">Peer Reviews</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">What Our Users Say</h2>
+      <p class="text-muted">Testimonials from authors, reviewers, and editors</p>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card testimonial-card h-100">
+          <div class="card-body p-4">
+            <div class="mb-3">
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+            </div>
+            <p class="card-text">"The peer review system is incredibly intuitive. It has streamlined our entire publication process and saved us countless hours."</p>
+            <div class="d-flex align-items-center mt-3">
+              <div class="flex-shrink-0">
+                <img src="{% static 'images/avatar1.jpg' %}" alt="User" class="rounded-circle" width="50">
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h6 class="mb-0">Dr. Sarah Johnson</h6>
+                <small class="text-muted">Editor-in-Chief, Literary Studies</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="card testimonial-card h-100">
+          <div class="card-body p-4">
+            <div class="mb-3">
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+            </div>
+            <p class="card-text">"As an author, I appreciate the transparency of the submission process. I can track my manuscript at every stage of review."</p>
+            <div class="d-flex align-items-center mt-3">
+              <div class="flex-shrink-0">
+                <img src="{% static 'images/avatar2.jpg' %}" alt="User" class="rounded-circle" width="50">
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h6 class="mb-0">Prof. Michael Chen</h6>
+                <small class="text-muted">Author, Department of English</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="card testimonial-card h-100">
+          <div class="card-body p-4">
+            <div class="mb-3">
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+            </div>
+            <p class="card-text">"The review interface makes it easy to provide detailed feedback. The structured format ensures I cover all necessary aspects."</p>
+            <div class="d-flex align-items-center mt-3">
+              <div class="flex-shrink-0">
+                <img src="{% static 'images/avatar3.jpg' %}" alt="User" class="rounded-circle" width="50">
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h6 class="mb-0">Dr. Emily Rodriguez</h6>
+                <small class="text-muted">Reviewer, General Studies</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-4">Ready to Transform Your Academic Publishing?</h2>
+    <p class="lead mb-4">Join thousands of researchers, editors, and institutions using our platform</p>
+    <a href="{% url 'register' %}" class="btn btn-light btn-lg px-4 py-2">Get Started Today</a>
+  </div>
+</section>
+
+<!-- Recent Publications Section -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">Recent Publications</h2>
+      <p class="text-muted">The latest articles from our journals</p>
+    </div>
+    
+    <div class="row g-4">
+      {% for article in recent_articles %}
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ article.title }}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{ article.author.get_full_name }}</h6>
+            <p class="card-text">{{ article.abstract|truncatechars:150 }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="text-muted">{{ article.journal.title }} • {{ article.publication_date|date:"F j, Y" }}</small>
+              <a href="#" class="btn btn-sm btn-outline-primary">Read More</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center">
+        <p>No recent publications available.</p>
+      </div>
+      {% endfor %}
+    </div>
+    
+    <div class="text-center mt-4">
+      <a href="{% url 'articles_list' %}" class="btn btn-primary">View All Publications</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

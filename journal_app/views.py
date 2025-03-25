@@ -100,6 +100,33 @@ def register(request):
 
 ############## End Athentication ##################### 
 
+def home(request):
+    # Get departments
+    departments = Department.objects.filter(is_active=True)[:3]
+    
+    # Get stats
+    journals_count = Journal.objects.filter(is_active=True).count()
+    articles_count = Article.objects.filter(status='PUBLISHED').count()
+    authors_count = Profile.objects.filter(role='AUTHOR').count()
+    reviews_count = Review.objects.filter(is_complete=True).count()
+    
+    # Get recent articles
+    recent_articles = Article.objects.filter(
+        status='PUBLISHED'
+    ).order_by('-publication_date')[:4]
+    
+    context = {
+        'departments': departments,
+        'journals_count': journals_count,
+        'articles_count': articles_count,
+        'authors_count': authors_count,
+        'reviews_count': reviews_count,
+        'recent_articles': recent_articles,
+    }
+    
+    return render(request, 'journal_app/home.html', context)
+
+
 # Department Views
 
 def department_home(request):

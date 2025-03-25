@@ -42,6 +42,7 @@ urlpatterns = [
 
     # Home url
     path('', views.department_home, name='department_home'),
+    path('', views.home, name='home'),
 
     # Review URLs
     path('<slug:dept_slug>/article/<int:article_id>/assign-reviewers/', 
